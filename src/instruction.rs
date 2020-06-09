@@ -1,15 +1,23 @@
 #[derive(Debug, PartialEq)]
 pub enum Opcode{
-    HLT,
+    HLT,//halt
     IGL,
-    LOAD,
-    ADD,
+    LOAD,//load program
+    ADD,//add
     SUB,
     MUL,
     DIV,
-    JMP,
-    JMPF,
-    JMPB
+    JMP,//jump
+    JMPF,//jump forward
+    JMPB,//jump backward
+    EQ,//equal
+    NEQ,//not equal
+    GT,//greter than
+    LT,//less than
+    GTQ,//greater than or equal to
+    LTQ, //less than or equal to
+    JEQ,//jump if equal
+
 }
 
 #[derive(Debug, PartialEq)]
@@ -36,6 +44,13 @@ impl From<u8> for Opcode {
             6 => Opcode::JMP,
             7=> Opcode::JMPF,
             8=> Opcode::JMPB,
+            9=>Opcode::EQ,
+            10=>Opcode::NEQ,
+            11=>Opcode::GTQ,
+            12=>Opcode::LTQ,
+            13=>Opcode::LT,
+            14=>Opcode::GT,
+            15=>Opcode::JEQ,
             _ => Opcode::IGL
         }
     }
