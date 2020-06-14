@@ -3,6 +3,8 @@ use std::io;
 use std::io::Write;
 //import the vm
 use crate::vm::VM;
+use nom::types::CompleteStr;
+use crate::assembler::program_parser::program;
 
 //core structure of the repl for the assembler
 pub struct REPL{
@@ -49,8 +51,24 @@ impl REPL{
                         println!("{}", command);
                     }
                 },
+                ".registers"=>{
+                    println!("listing all programs in memory");
+                    println!("{:?}", self.vm.program);
+                },
                 _ => {
-                    println!("Invalid input");
+                    let parsed_program = program(CompleteStr(buffer));
+                if !parsed_program.is_ok() {
+                    println!("Unable to parse input");
+                    continue;
+                }
+                let (_, result) = parsed_program.unwrap();
+                let bytecode = result.to_bytes();
+                println!("{:?}", bytecode);
+                // TODO: Make a function to let us add bytes to the VM
+                for byte in bytecode {
+                    self.vm.add_byte(byte);
+                }
+                self.vm.run_once();
                 }
             }
         }

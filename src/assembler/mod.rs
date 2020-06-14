@@ -1,8 +1,10 @@
 use crate::instruction::Opcode;
-pub mod opcode;
-// pub mod opcode_parsers;
-// pub mod operand_parsers;
-// pub mod register_parsers;
+pub mod opcode_parser;
+pub mod instruction_parsers;
+pub mod program_parser;
+// use crate::assembler::opcode::opcode_parsers;
+// use crate::opcode::operand_parsers;
+// use crate::opcode::register_parsers;
 
 #[derive(Debug, PartialEq)]
 pub enum Token {

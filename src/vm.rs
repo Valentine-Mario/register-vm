@@ -33,6 +33,11 @@ impl VM{
     pub fn run_once(&mut self){
         self.execute_instruction();
     }
+
+    pub fn add_byte(&mut self, b: u8) {
+        self.program.push(b);
+    }
+
     
     fn execute_instruction(&mut self)->bool{
          // If our program counter has exceeded the length of the program itself, something has

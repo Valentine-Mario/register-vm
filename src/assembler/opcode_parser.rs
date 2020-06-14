@@ -4,14 +4,13 @@ use nom::digit;
 use crate::assembler::Token;
 use crate::instruction;
 
-named!(opcode_load<CompleteStr, Token>,  do_parse!(
+named!(pub opcode_load<CompleteStr, Token>,  do_parse!(
     tag!("load") >> (Token::Op{code: instruction::Opcode::LOAD})
 )
 );
 
 // create a function named register that accepts a CompleteStr and returns a CompleteStr and Token or an Error
-
-named!(register <CompleteStr, Token>, 
+named!(pub register <CompleteStr, Token>, 
     //use the ws! macro, which tells it to consume any whitespace on either side of our register. This lets us write variants such as LOAD $0 in addition to LOAD $0
     ws!(
         //use the do_parse! macro to chain parsers
@@ -29,8 +28,7 @@ named!(register <CompleteStr, Token>,
         )
     )
 );
-
-named!(integer_operand<CompleteStr, Token>,
+named!(pub integer_operand<CompleteStr, Token>,
     ws!(
         do_parse!(
             tag!("#") >>
@@ -64,6 +62,9 @@ mod tests {
     fn test_parse_register() {
         let result = register(CompleteStr("$0"));
         assert_eq!(result.is_ok(), true);
+        let (rest, num)=result.unwrap();
+        assert_eq!(rest, CompleteStr(""));
+        assert_eq!(num, Token::Register{reg_num: 0});
         let result = register(CompleteStr("0"));
         assert_eq!(result.is_ok(), false);
         let result = register(CompleteStr("$a"));
