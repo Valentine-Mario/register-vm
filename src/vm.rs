@@ -10,6 +10,8 @@ pub struct VM{
     remainder: usize,
     /// Contains the result of the last comparison operation
     equal_flag: bool,
+    //contains the head for our vm memory
+    heap:Vec<u8>
 }
 
 impl VM{
@@ -19,7 +21,8 @@ impl VM{
             pc:0,
             program:vec![],
             remainder:0,
-            equal_flag:false
+            equal_flag:false,
+            heap:vec![]
         }
     }
 
@@ -139,6 +142,13 @@ impl VM{
             instruction::Opcode::JMPB=>{
                 let value=self.registers[self.next_8_bits()as usize] as usize;
                 self.pc+=value;
+            },
+            //aloc extends the size of the heap vector by the amount in the register given as an argument.
+            instruction::Opcode::ALOC=>{
+                let register = self.next_8_bits() as usize;
+                let bytes = self.registers[register];
+                let new_end = self.heap.len() as i32 + bytes;
+                self.heap.resize(new_end as usize, 0);
             },
             
                 instruction::Opcode::HLT=>{
@@ -335,9 +345,13 @@ fn test_jmp_opcode() {
         test_vm.run_once();
         assert_eq!(test_vm.pc, 7);
     }
-
-
-
-
+    #[test]
+fn test_aloc_opcode() {
+    let mut test_vm = VM::new();
+    test_vm.registers[0] = 500;
+    test_vm.program = vec![17, 0, 0, 0];
+    test_vm.run_once();
+    assert_eq!(test_vm.heap.len(), 500);
+}
 
 }

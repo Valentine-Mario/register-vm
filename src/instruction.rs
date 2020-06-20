@@ -1,3 +1,5 @@
+use nom::types::CompleteStr;
+
 #[derive(Debug, PartialEq)]
 pub enum Opcode{
     HLT,//halt
@@ -17,6 +19,8 @@ pub enum Opcode{
     GTQ,//greater than or equal to
     LTQ, //less than or equal to
     JEQ,//jump if equal
+    NOP,
+    ALOC //for allocating memory to the heap
 
 }
 
@@ -51,24 +55,39 @@ impl From<u8> for Opcode {
             13=>Opcode::LT,
             14=>Opcode::GT,
             15=>Opcode::JEQ,
+            16=>Opcode::NOP,
+            17=>Opcode::ALOC,
             _ => Opcode::IGL
         }
     }
 }
-// impl From<Opcode> for u8 {
-//     fn from(op: Opcode) -> Self {
-//         match op {
-//             Opcode::LOAD => 0,
-//             Opcode::ADD => 1,
-//             Opcode::SUB => 2,
-//             Opcode::MUL => 3,
-//             Opcode::DIV => 4,
-//             Opcode::HLT => 5,
-//             Opcode::JMP => 6,
-//             Opcode::IGL=>7,
-//         }
-//     }
-// }
+
+
+impl<'a> From<CompleteStr<'a>> for Opcode {
+    fn from(v: CompleteStr<'a>) -> Self {
+        match v {
+            CompleteStr("load") => Opcode::LOAD,
+            CompleteStr("add") => Opcode::ADD,
+            CompleteStr("sub") => Opcode::SUB,
+            CompleteStr("mul") => Opcode::MUL,
+            CompleteStr("div") => Opcode::DIV,
+            CompleteStr("hlt") => Opcode::HLT,
+            CompleteStr("jmp") => Opcode::JMP,
+            CompleteStr("jmpf") => Opcode::JMPF,
+            CompleteStr("jmpb") => Opcode::JMPB,
+            CompleteStr("eq") => Opcode::EQ,
+            CompleteStr("neq") => Opcode::NEQ,
+            CompleteStr("gte") => Opcode::GTQ,
+            CompleteStr("gt") => Opcode::GT,
+            CompleteStr("lte") => Opcode::LTQ,
+            CompleteStr("lt") => Opcode::LT,
+            CompleteStr("jmpe") => Opcode::JEQ,
+            CompleteStr("nop") => Opcode::NOP,
+            CompleteStr("aloc")=>Opcode::ALOC,
+            _ => Opcode::IGL,
+        }
+    }
+}
 
 #[cfg(test)]
 mod tests {

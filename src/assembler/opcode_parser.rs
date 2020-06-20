@@ -1,13 +1,22 @@
 use nom::types::CompleteStr;
 use nom::digit;
-
+use nom::alpha1;
 use crate::assembler::Token;
 use crate::instruction;
 
-named!(pub opcode_load<CompleteStr, Token>,  do_parse!(
-    tag_no_case!("load") >> (Token::Op{code: instruction::Opcode::LOAD})
-)
-);
+//recognize opcode string from instructions
+named!(pub opcode<CompleteStr, Token>,
+    do_parse!(
+        //alpha1 recognizes one or more lowercase and uppercase alphabetic characters For ASCII strings: a-zA-Z For UTF8 strings, any alphabetic code point 
+        opcode: alpha1 >>
+        (
+          {
+              Token::Op{code: instruction::Opcode::from(opcode)}
+          }
+        )
+    )
+  );
+  
 
 // create a function named register that accepts a CompleteStr and returns a CompleteStr and Token or an Error
 named!(pub register <CompleteStr, Token>, 
@@ -47,15 +56,15 @@ mod tests {
     #[test]
     fn test_opcode_load() {
         // First tests that the opcode is detected and parsed correctly
-        let result = opcode_load(CompleteStr("load"));
+        let result = opcode(CompleteStr("load"));
         assert_eq!(result.is_ok(), true);
         let (rest, token) = result.unwrap();
         assert_eq!(token, Token::Op{code: instruction::Opcode::LOAD});
         assert_eq!(rest, CompleteStr(""));
 
-        // Tests that an invalid opcode isn't recognized
-        let result = opcode_load(CompleteStr("aold"));
-        assert_eq!(result.is_ok(), false);
+        // Tests that an invalid opcode isn't recognized got igl
+        let result = opcode(CompleteStr("aold"));
+        assert_eq!(result.is_ok(), true);
     }
 
     #[test]
@@ -83,5 +92,20 @@ fn test_parse_integer_operand() {
     // Test an invalid one (missing the #)
     let result = integer_operand(CompleteStr("10"));
     assert_eq!(result.is_ok(), false);
+}
+
+#[test]
+fn test_opcode() {
+    let result = opcode(CompleteStr("load"));
+    assert_eq!(result.is_ok(), true);
+    let (rest, token) = result.unwrap();
+    assert_eq!(token, Token::Op { code: instruction::Opcode::LOAD });
+    assert_eq!(rest, CompleteStr(""));
+    let result = opcode(CompleteStr("aold"));
+    let (_, token) = result.unwrap();
+    assert_eq!(token, Token::Op { code: instruction::Opcode::IGL });
+    let result = opcode(CompleteStr("div"));
+    let (_, token) = result.unwrap();
+    assert_eq!(token, Token::Op { code: instruction::Opcode::DIV });
 }
 }
