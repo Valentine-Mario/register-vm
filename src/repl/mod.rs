@@ -5,6 +5,9 @@ use std::io::Write;
 use crate::vm::VM;
 use nom::types::CompleteStr;
 use crate::assembler::program_parser::program;
+use std::path::Path;
+use std::fs::File;
+use std::io::Read;
 
 //core structure of the repl for the assembler
 pub struct REPL{
@@ -54,6 +57,35 @@ impl REPL{
                 ".registers"=>{
                     println!("listing all programs in memory");
                     println!("{:?}", self.vm.program);
+                },
+                ".clear"=>{
+                    //to clear the program in memory
+                    println!("clearing all program from memory");
+                    self.vm.clear_program();
+                },
+                ".load_file" => {
+                    print!("Please enter the path to the file you wish to load: ");
+                    io::stdout().flush().expect("Unable to flush stdout");
+                    let mut tmp = String::new();
+                    stdin.read_line(&mut tmp).expect("Unable to read line from user");
+                    let tmp = tmp.trim();
+                    let filename = Path::new(&tmp);
+                    let mut f = File::open(Path::new(&filename)).expect("File not found");
+                    let mut contents = String::new();
+                    f.read_to_string(&mut contents).expect("There was an error reading from the file");
+                    let program = match program(CompleteStr(&contents)) {
+                        // Rusts pattern matching is pretty powerful an can even be nested
+                        Ok((remainder, program)) => {
+                            program
+                        },
+                        Err(e) => {
+                            println!("Unable to parse input: {:?}", e);
+                            continue;
+                        }
+                    };
+                    let bytecode= self.vm.program.append(&mut program.to_bytes());
+                    println!("{:?}", bytecode);
+
                 },
                 _ => {
                     let parsed_program = program(CompleteStr(buffer));

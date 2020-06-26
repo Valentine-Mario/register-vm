@@ -20,7 +20,9 @@ pub enum Opcode{
     LTQ, //less than or equal to
     JEQ,//jump if equal
     NOP,
-    ALOC //for allocating memory to the heap
+    ALOC, //for allocating memory to the heap
+    INC,
+    DEC
 
 }
 
@@ -57,11 +59,40 @@ impl From<u8> for Opcode {
             15=>Opcode::JEQ,
             16=>Opcode::NOP,
             17=>Opcode::ALOC,
+            18=>Opcode::INC,
+            19=>Opcode::DEC,
             _ => Opcode::IGL
         }
     }
 }
 
+impl From<Opcode> for u8 {
+    fn from(op: Opcode) -> Self {
+        match op {
+            Opcode::LOAD => 0,
+            Opcode::ADD => 1,
+            Opcode::SUB => 2,
+            Opcode::MUL => 3,
+            Opcode::DIV => 4,
+            Opcode::HLT => 5,
+            Opcode::JMP => 6,
+            Opcode::JMPF => 7,
+            Opcode::JMPB => 8,
+            Opcode::EQ => 9,
+            Opcode::NEQ => 10,
+            Opcode::GTQ => 11,
+            Opcode::LTQ => 12,
+            Opcode::LT => 13,
+            Opcode::GT => 14,
+            Opcode::JEQ => 15,
+            Opcode::NOP => 16,
+            Opcode::ALOC => 17,
+            Opcode::INC => 18,
+            Opcode::DEC => 19,
+            Opcode::IGL=>20
+        }
+    }
+}
 
 impl<'a> From<CompleteStr<'a>> for Opcode {
     fn from(v: CompleteStr<'a>) -> Self {
@@ -84,6 +115,8 @@ impl<'a> From<CompleteStr<'a>> for Opcode {
             CompleteStr("jmpe") => Opcode::JEQ,
             CompleteStr("nop") => Opcode::NOP,
             CompleteStr("aloc")=>Opcode::ALOC,
+            CompleteStr("inc")=>Opcode::INC,
+            CompleteStr("dec")=>Opcode::DEC,
             _ => Opcode::IGL,
         }
     }

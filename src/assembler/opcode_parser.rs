@@ -3,7 +3,7 @@ use nom::digit;
 use nom::alpha1;
 use crate::assembler::Token;
 use crate::instruction;
-
+use crate::assembler::register_parser;
 //recognize opcode string from instructions
 named!(pub opcode<CompleteStr, Token>,
     do_parse!(

@@ -41,12 +41,16 @@ impl VM{
         self.program.push(b);
     }
 
+    pub fn clear_program(&mut self){
+        self.program=vec![];
+    }
+
     
     fn execute_instruction(&mut self)->bool{
          // If our program counter has exceeded the length of the program itself, something has
             // gone awry
             if self.pc>=self.program.len(){
-                return false
+                return true
             }
             match self.decode_opcode(){
                 //1. Decode the first 8 bits and see LOAD 2. Decode the next 8 bits and use it to get the register 3. Decode the next 16 bits (split into 2 u8s) into an integer 4. Store them in the register
@@ -153,13 +157,14 @@ impl VM{
             
                 instruction::Opcode::HLT=>{
                     println!("HLT encountered");
-                    false;
+                    return true;
                 },  
                 _=>{
                     println!("unrecognized instruction");
+                    return true;
                 }  
             }
-            true
+            false
     }
     fn decode_opcode(&mut self) -> instruction::Opcode {
         //get cureent opcode and move to next byte
