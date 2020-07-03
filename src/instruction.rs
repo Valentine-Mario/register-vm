@@ -1,6 +1,6 @@
 use nom::types::CompleteStr;
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Copy, Clone)]
 pub enum Opcode{
     HLT,//halt
     IGL,
@@ -38,6 +38,8 @@ impl Instruction{
         }
     }
 }
+
+
 impl From<u8> for Opcode {
     fn from(v: u8) -> Self {
         match v {

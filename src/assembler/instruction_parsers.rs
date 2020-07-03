@@ -1,7 +1,6 @@
 use crate::assembler::Token;
 use crate::assembler::opcode_parser::*;
 use nom::types::CompleteStr;
-use nom::multispace;
 use crate::assembler::operand_parser::operand;
 use crate::assembler::label_parser::label_declaration;
 use crate::assembler::directive_parser::directive;
@@ -50,13 +49,13 @@ named!(pub instruction<CompleteStr, AssemblerInstruction>,
 );
 
 impl AssemblerInstruction {
-    pub fn to_bytes(self) -> Vec<u8> {
+    pub fn to_bytes(&self) -> Vec<u8> {
         let mut results:Vec<u8> = vec![];
-        if let Some(token) = self.opcode{
+        if let Some(ref token) = self.opcode{
             match token {
                 Token::Op { code } => match code {
                     _ => {
-                        let b: u8 = (code).into();
+                        let b: u8 = (*code).into();
                         results.push(b);
 
                     }
@@ -79,6 +78,20 @@ impl AssemblerInstruction {
 
         return results;
     }
+    pub fn is_label(&self) -> bool {
+        self.label.is_some()
+    }
+
+    pub fn get_label_name(&self) -> Option<String> {
+        match &self.label {
+            Some(l) => match l {
+                Token::LabelDeclaration { name } => Some(name.clone()),
+                _ => None,
+            },
+            None => None,
+        }
+    }
+
 
     //convert numbers to bytecode
     fn extract_operand(t: &Token, results: &mut Vec<u8>) {
