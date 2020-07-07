@@ -9,6 +9,8 @@ pub mod directive_parser;
 use nom::types::CompleteStr;
 use crate::assembler::program_parser::{program, Program};
 use crate::vm;
+const PIE_HEADER_PREFIX: [u8; 4] = [45, 50, 49, 45];
+const PIE_HEADER_LENGTH: usize = 64;
 // use crate::assembler::opcode::opcode_parsers;
 // use crate::opcode::operand_parsers;
 // use crate::opcode::register_parsers;
@@ -57,8 +59,14 @@ impl Assembler {
     pub fn assemble(&mut self, raw: &str) -> Option<Vec<u8>> {
         match program(CompleteStr(raw)) {
             Ok((_remainder, program)) => {
-                self.process_first_phase(&program);
-                Some(self.process_second_phase(&program))
+                // First get the header so we can smush it into the bytecode letter
+            let mut assembled_program = self.write_pie_header();
+            self.process_first_phase(&program);
+            let mut body = self.process_second_phase(&program);
+
+            // Merge the header with the populated body vector
+            assembled_program.append(&mut body);
+            Some(assembled_program)
             },
             Err(e) => {
                 println!("There was an error assembling the code: {:?}", e);
@@ -67,11 +75,13 @@ impl Assembler {
         }
     }
     
+    //first label extract labels and pas it onto the second label
     fn process_first_phase(&mut self, p: &Program) {
         self.extract_labels(p);
         self.phase = AssemblerPhase::Second;
     }
     
+    //second label converts it to byte and return the vector program
     fn process_second_phase(&mut self, p: &Program) -> Vec<u8> {
         let mut program = vec![];
         for i in &p.instructions {
@@ -96,6 +106,18 @@ impl Assembler {
             }
             c += 4;
         }
+    }
+    //This will write out our header, which right now is 4 bytes and 60 0s.
+    // Its important to pad the header so that we can use those bytes later if needed.
+    fn write_pie_header(&self) -> Vec<u8> {
+        let mut header = vec![];
+        for byte in PIE_HEADER_PREFIX.iter() {
+            header.push(byte.clone());
+        }
+        while header.len() <= PIE_HEADER_LENGTH {
+            header.push(0 as u8);
+        }
+        header
     }
 }
 
@@ -173,9 +195,7 @@ fn test_assemble_program() {
     let test_string = "load $0 #100\nload $1 #1\nload $2 #0\ntest: inc $0\nneq $0 $2\njmpe @test\nhlt";
     let program = asm.assemble(test_string).unwrap();
     let mut vm = vm::VM::new();
-    assert_eq!(program.len(), 24);
-    for i in program{
-        vm.add_byte(i);
-    }
-    assert_eq!(vm.program.len(), 24);
+    assert_eq!(program.len(), 89);
+    vm.add_bytes(program);
+    assert_eq!(vm.program.len(), 89);
 }

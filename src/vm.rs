@@ -1,4 +1,7 @@
 use crate::instruction;
+const PIE_HEADER_PREFIX: [u8; 4] = [45, 50, 49, 45];
+const PIE_HEADER_LENGTH: usize = 64;
+
 pub struct VM{
    /// Array that simulates having hardware registers
     pub registers: [i32; 32],
@@ -41,10 +44,25 @@ impl VM{
         self.program.push(b);
     }
 
+    // Adds an arbitrary byte to the VM's program
+    pub fn add_bytes(&mut self, mut b: Vec<u8>) {
+        self.program.append(&mut b);
+    }
+
+
     pub fn clear_program(&mut self){
         self.program=vec![];
     }
 
+    /// Processes the header of bytecode the VM wants to execute
+    pub fn verify_header(&self) -> bool {
+        if self.program[0..4] != PIE_HEADER_PREFIX {
+            return false;
+        }
+        true
+    }
+
+   
     
     fn execute_instruction(&mut self)->bool{
          // If our program counter has exceeded the length of the program itself, something has
@@ -183,9 +201,19 @@ impl VM{
         self.pc += 2;
         return result;
     }
-   
 
 }
+ pub fn prepend_header(mut b: Vec<u8>) -> Vec<u8> {
+        let mut prepension = vec![];
+        for byte in PIE_HEADER_PREFIX.iter() {
+            prepension.push(byte.clone());
+        }
+        while prepension.len() <= PIE_HEADER_LENGTH {
+            prepension.push(0);
+        }
+        prepension.append(&mut b);
+        prepension
+    }
 
 #[cfg(test)]
 mod tests{
